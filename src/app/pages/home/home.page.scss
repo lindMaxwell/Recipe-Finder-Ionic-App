@@ -1,14 +1,26 @@
-/* controls image size */
-.recipe-image-container {
-  display: flex;
-  justify-content: center;
-  margin-top: 10px;
+.loading {
+  margin-top: 12px;
+}
+
+.error {
+  margin-top: 12px;
 }
 
 
-.recipe-image-container ion-img {
-  width: 150px;        
-  height: auto;
-  object-fit: contain; 
-  border-radius: 8px;  
+.recipe-card {
+  width: 100%;
+  margin: 12px 0;
 }
+
+.recipe-image {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+ion-card-title {
+  font-size: 1rem;
+}
+

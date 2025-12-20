@@ -1,61 +1,62 @@
+/* ============================
+   SEARCH (Home Page)
+   ============================ */
+
+export interface RecipeSearchResponse {
+  results: RecipeSearchResult[];
+  offset: number;
+  number: number;
+  totalResults: number;
+}
+
 export interface RecipeSearchResult {
   id: number;
   title: string;
   image: string;
+  imageType?: string;
 }
 
 
- 
- 
-export interface RecipeSearchResponse {
-  results: RecipeSearchResult[];
-}
-
-
-//Ingredient measures returned
- 
-export interface IngredientMeasures {
-  us: {
-    amount: number;
-    unitLong: string;
-  };
-  metric: {
-    amount: number;
-    unitLong: string;
-  };
-}
-
-
-//This is one ingredient in the response.
- 
-export interface RecipeIngredient {
-  original: string;
-  measures: IngredientMeasures;
-}
-
-
- //One instruction step from the response.
- 
-export interface RecipeInstructionStep {
-  number: number;
-  step: string;
-}
-
-
-export interface RecipeInstructionBlock {
-  steps: RecipeInstructionStep[];
-}
-
-
- //This shows the response
-
+/* ============================
+   RECIPE DETAILS
+   ============================ */
 
 export interface RecipeDetailsResponse {
   id: number;
   title: string;
   image: string;
 
-  extendedIngredients: RecipeIngredient[];
+  readyInMinutes?: number;
+  servings?: number;
+  instructions?: string | null;
 
-  analyzedInstructions: RecipeInstructionBlock[];
+  extendedIngredients?: ExtendedIngredient[];
 }
+
+
+/* ============================
+   INGREDIENTS
+   ============================ */
+
+export interface ExtendedIngredient {
+  id?: number;
+  name: string;
+
+  // basic values Spoonacular provides
+  amount: number;
+  unit: string;
+  original?: string;
+
+  // Spoonacular also provides measures (metric/us)
+  measures?: {
+    us: MeasureUnit;
+    metric: MeasureUnit;
+  };
+}
+
+export interface MeasureUnit {
+  amount: number;
+  unitShort: string;
+  unitLong: string;
+}
+

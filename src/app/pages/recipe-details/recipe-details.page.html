@@ -1,42 +1,50 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>{{ recipe?.title }}</ion-title>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+
+    <ion-title>recipe-details</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content *ngIf="recipe; else loading">
+<ion-content class="ion-padding">
+  <div *ngIf="isLoading">
+    <ion-spinner></ion-spinner>
+    <p>Loading recipe...</p>
+  </div>
 
-  <ion-img [src]="recipe.image"></ion-img>
+  <p *ngIf="!isLoading && errorMessage">{{ errorMessage }}</p>
 
-  <ion-list>
-    <ion-item *ngFor="let ing of recipe.extendedIngredients">
-      <ion-label>
-        {{ ing.original }}
-        <br />
-        <strong>
-          {{
-            useMetric
-              ? ing.measures.metric.amount + ' ' + ing.measures.metric.unitLong
-              : ing.measures.us.amount + ' ' + ing.measures.us.unitLong
-          }}
-        </strong>
-      </ion-label>
-    </ion-item>
-  </ion-list>
+  <div *ngIf="!isLoading && recipe">
+    <ion-img [src]="recipe.image"></ion-img>
 
-  <ion-list *ngIf="recipe.analyzedInstructions.length">
-    <ion-item *ngFor="let step of recipe.analyzedInstructions[0].steps">
-      <ion-label>
-        <strong>Step {{ step.number }}:</strong>
-        {{ step.step }}
-      </ion-label>
-    </ion-item>
-  </ion-list>
+    <h2>{{ recipe.title }}</h2>
 
+    <p *ngIf="recipe.readyInMinutes">Ready in {{ recipe.readyInMinutes }} minutes</p>
+    <p *ngIf="recipe.servings">Servings: {{ recipe.servings }}</p>
+
+  <ion-list *ngIf="recipe?.extendedIngredients?.length">
+  <ion-item *ngFor="let ing of recipe.extendedIngredients">
+    <ion-label>
+      <ng-container *ngIf="useMetric; else usBlock">
+        {{ ing.measures?.metric?.amount ?? ing.amount }}
+        {{ ing.measures?.metric?.unitLong ?? ing.unit }}
+        — {{ ing.name }}
+      </ng-container>
+
+      <ng-template #usBlock>
+        {{ ing.measures?.us?.amount ?? ing.amount }}
+        {{ ing.measures?.us?.unitLong ?? ing.unit }}
+        — {{ ing.name }}
+      </ng-template>
+    </ion-label>
+  </ion-item>
+</ion-list>
+
+
+    <h3>Instructions</h3>
+    <p>{{ stripHtml(recipe.instructions) }}</p>
+  </div>
 </ion-content>
-
-<ng-template #loading>
-  <ion-spinner></ion-spinner>
-</ng-template>
-
 

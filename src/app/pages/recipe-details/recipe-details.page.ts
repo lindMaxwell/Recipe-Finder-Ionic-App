@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 
+
+
 import {
   IonContent,
   IonHeader,
@@ -12,12 +14,16 @@ import {
   IonItem,
   IonLabel,
   IonSpinner,
+  IonBackButton,
+  IonButtons
+ 
 } from '@ionic/angular/standalone';
+
+
 
 import { RecipeService } from '../../services/recipe.service';
 import { RecipeDetailsResponse } from '../../services/recipe.models';
-import { SettingsService } from '../../services/settings.service';
-
+import { SettingsService, MeasurementUnit } from '../../services/settings.service';
 
 @Component({
   selector: 'app-recipe-details',
@@ -35,18 +41,17 @@ import { SettingsService } from '../../services/settings.service';
     IonItem,
     IonLabel,
     IonSpinner,
+    IonBackButton,
+    IonButtons
   ],
 })
 export class RecipeDetailsPage implements OnInit {
-
-  // Holds the recipe returned from the API
   recipe?: RecipeDetailsResponse;
+
+  unit: MeasurementUnit = 'metric';   
   useMetric = true;
 
-  // Loading flag
   isLoading: boolean = true;
-
-  // Store an error message if something fails
   errorMessage: string = '';
 
   constructor(
@@ -55,36 +60,44 @@ export class RecipeDetailsPage implements OnInit {
     private settingsService: SettingsService
   ) {}
 
-  ngOnInit(): void {
-  const idFromUrl = Number(this.route.snapshot.paramMap.get('id'));
+  async ngOnInit(): Promise<void> {
+    const idFromUrl = Number(this.route.snapshot.paramMap.get('id'));
 
-  if (!idFromUrl) {
-    this.errorMessage = 'Invalid recipe id in the URL.';
-    this.isLoading = false;
-    return;
+    if (!idFromUrl) {
+      this.errorMessage = 'Invalid recipe id in the URL.';
+      this.isLoading = false;
+      return;
+    }
+
+    await this.loadPage(idFromUrl);
   }
 
-  this.loadPage(idFromUrl);
+  private async loadPage(id: number): Promise<void> {
+    // Read the saved setting from storage
+    this.unit = await this.settingsService.getUnit();
+    this.useMetric = this.unit === 'metric';
+
+    // Now load recipe details (PASS unit into service)
+    this.recipeService.getRecipeDetailsById(id, this.unit).subscribe({
+      next: (data) => {
+        this.recipe = data;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error(err);
+        this.errorMessage = 'Failed to load recipe details.';
+        this.isLoading = false;
+      },
+
+      
+    });
+
+    
+  }
+      stripHtml(html: string | undefined | null): string {
+      return (html || '').replace(/<[^>]+>/g, '');
+  }
+
 }
 
-private async loadPage(id: number): Promise<void> {
-  // Read the saved setting from storage
-  const unit = await this.settingsService.getUnit();
-  this.useMetric = unit === 'metric';
-
-  // Now load recipe details
-  this.recipeService.getRecipeDetailsById(id).subscribe({
-    next: (data) => {
-      this.recipe = data;
-      this.isLoading = false;
-    },
-    error: (err) => {
-      console.error(err);
-      this.errorMessage = 'Failed to load recipe details.';
-      this.isLoading = false;
-    },
-  });
-}
-
-}
 

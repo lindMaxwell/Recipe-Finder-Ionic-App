@@ -2,57 +2,41 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-
 import { RecipeSearchResponse, RecipeDetailsResponse } from './recipe.models';
+import type { MeasurementUnit } from './settings.service'; 
 
-
-/**
- * This services will:
- * - talk to Spoonacular
- * - return data to pages (Home page, Recipe Details page)
- */
 @Injectable({
   providedIn: 'root',
 })
 export class RecipeService {
-  // Spoonacular API key
   private apiKey: string = '70759a4f7911402abcc53d3c51d3b759';
-
-  // URL for Spoonacular API calls
   private readonly baseUrl = 'https://api.spoonacular.com';
 
   constructor(private http: HttpClient) {}
 
-  
-  RecipeDetailsResponse(id: number): Observable<RecipeDetailsResponse> {
-  // Build the URL using a template literal (backticks)
-  const url = `${this.baseUrl}/recipes/${id}/information?apiKey=${this.apiKey}`;
-
-  // HttpClient.get returns an Observable we can subscribe to in the page
-  return this.http.get<RecipeDetailsResponse>(url);
-}
-
-
-   // Search recipes by ingredients.
-   
+  // Search recipes 
   searchRecipesByIngredients(ingredients: string): Observable<RecipeSearchResponse> {
-    // Build query string parameters 
     const params = new HttpParams()
       .set('query', ingredients)
-      .set('apiKey', this.apiKey);
+      .set('apiKey', this.apiKey)
+      .set('number', '10')
+      .set('addRecipeInformation', 'false');
 
-    // Make the GET request and return the observable to the page
     return this.http.get<RecipeSearchResponse>(
       `${this.baseUrl}/recipes/complexSearch`,
       { params }
     );
   }
 
-  
-   //Get full recipe details (ingredients + instructions).
-   
-  getRecipeDetailsById(id: number): Observable<RecipeDetailsResponse> {
-    const params = new HttpParams().set('apiKey', this.apiKey);
+  // Get full recipe details (ingredients + instructions)
+  getRecipeDetailsById(
+    id: number,
+    unit: MeasurementUnit | 'metric' | 'us' = 'metric'
+  ): Observable<RecipeDetailsResponse> {
+    const params = new HttpParams()
+      .set('apiKey', this.apiKey)
+      .set('includeNutrition', 'false')
+      .set('units', unit);
 
     return this.http.get<RecipeDetailsResponse>(
       `${this.baseUrl}/recipes/${id}/information`,
@@ -60,3 +44,4 @@ export class RecipeService {
     );
   }
 }
+
