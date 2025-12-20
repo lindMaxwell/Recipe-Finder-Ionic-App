@@ -2,13 +2,13 @@
   <ion-toolbar>
     <ion-title>G00438819</ion-title>
 
-        <ion-buttons slot="end">
-      <ion-button [routerLink]="['/favourites']">
-        Favourites
+       <ion-buttons slot="end">
+      <ion-button (click)="goToFavourites()">
+        <ion-icon name="heart-outline"></ion-icon>
       </ion-button>
 
-      <ion-button [routerLink]="['/settings']">
-        Settings
+      <ion-button (click)="goToSettings()">
+        <ion-icon name="settings-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -54,7 +54,11 @@
 
 
         <ion-card-header>
-          <ion-card-title>{{ r.title }}</ion-card-title>
+           <ion-card-title>{{ r.title }}</ion-card-title>
+
+           <ion-button fill="clear" size="small" (click)="toggleFav(r.id)">
+            <ion-icon [name]="isFav(r.id) ? 'heart' : 'heart-outline'"></ion-icon>
+          </ion-button>
         </ion-card-header>
 
         <ion-card-content>

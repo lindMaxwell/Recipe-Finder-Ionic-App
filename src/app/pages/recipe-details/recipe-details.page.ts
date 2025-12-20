@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
+import { FavouritesService } from '../../services/favourites.service';
 
 
 
@@ -15,7 +16,8 @@ import {
   IonLabel,
   IonSpinner,
   IonBackButton,
-  IonButtons
+  IonButtons,
+  IonButton
  
 } from '@ionic/angular/standalone';
 
@@ -42,7 +44,8 @@ import { SettingsService, MeasurementUnit } from '../../services/settings.servic
     IonLabel,
     IonSpinner,
     IonBackButton,
-    IonButtons
+    IonButtons,
+    IonButton
   ],
 })
 export class RecipeDetailsPage implements OnInit {
@@ -54,10 +57,14 @@ export class RecipeDetailsPage implements OnInit {
   isLoading: boolean = true;
   errorMessage: string = '';
 
+  isFavourite = false;
+
+
   constructor(
     private route: ActivatedRoute,
     private recipeService: RecipeService,
-    private settingsService: SettingsService
+    private settingsService: SettingsService,
+    private favouritesService: FavouritesService
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -79,21 +86,34 @@ export class RecipeDetailsPage implements OnInit {
 
     // Now load recipe details (PASS unit into service)
     this.recipeService.getRecipeDetailsById(id, this.unit).subscribe({
-      next: (data) => {
+      next: async(data) => {
         this.recipe = data;
+        this.isFavourite = await this.favouritesService.isFavourite(data.id);
         this.isLoading = false;
       },
+
+
+      
       error: (err) => {
         console.error(err);
         this.errorMessage = 'Failed to load recipe details.';
         this.isLoading = false;
       },
 
+    
       
     });
 
     
   }
+
+      async toggleFavourite(): Promise<void> {
+       if (!this.recipe) return;
+
+       const nowFav = await this.favouritesService.toggle(this.recipe.id);
+       this.isFavourite = nowFav;
+      }
+
       stripHtml(html: string | undefined | null): string {
       return (html || '').replace(/<[^>]+>/g, '');
   }

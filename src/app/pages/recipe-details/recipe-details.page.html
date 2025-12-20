@@ -8,6 +8,8 @@
   </ion-toolbar>
 </ion-header>
 
+
+
 <ion-content class="ion-padding">
   <div *ngIf="isLoading">
     <ion-spinner></ion-spinner>
@@ -18,9 +20,11 @@
 
   <div *ngIf="!isLoading && recipe">
     <ion-img [src]="recipe.image"></ion-img>
-
+    
     <h2>{{ recipe.title }}</h2>
-
+    <ion-button expand="block" (click)="toggleFavourite()" *ngIf="recipe">
+      {{ isFavourite ? 'Remove From Favourites' : 'Add to Favourites' }}
+    </ion-button>
     <p *ngIf="recipe.readyInMinutes">Ready in {{ recipe.readyInMinutes }} minutes</p>
     <p *ngIf="recipe.servings">Servings: {{ recipe.servings }}</p>
 
