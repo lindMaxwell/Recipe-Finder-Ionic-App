@@ -1,18 +1,63 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar>
     <ion-title>home</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">home</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content class="ion-padding">
+
+  <!-- Ingredient input -->
+  <ion-item>
+    <ion-label position="stacked">Enter Ingredients</ion-label>
+    <ion-input
+      [(ngModel)]="ingredientsText"
+      placeholder="e.g. chicken, rice"
+    ></ion-input>
+  </ion-item>
+
+  <!-- Buttons -->
+  <ion-button expand="block" (click)="searchRecipes()">
+    Search
+  </ion-button>
+
+  <ion-button expand="block" fill="outline" (click)="clearSearch()">
+    Clear
+  </ion-button>
+
+  <!-- Loading Message -->
+  <div *ngIf="isLoading">
+    <ion-spinner></ion-spinner>
+    <p>Loading recipes...</p>
+  </div>
+
+  <!-- Error message -->
+  <p *ngIf="errorMessage">{{ errorMessage }}</p>
+
+  <!-- Results list -->
+  <ion-list *ngIf="recipes.length > 0">
+    <ion-item *ngFor="let r of recipes">
+      <ion-card style="width: 100%;">
+        <div class="recipe-image-container">
+         <ion-img [src]="r.image"></ion-img>
+        </div>
+
+
+        <ion-card-header>
+          <ion-card-title>{{ r.title }}</ion-card-title>
+        </ion-card-header>
+
+        <ion-card-content>
+          <!--  -->
+          <ion-button expand="block" fill="outline" (click)="openDetails(r.id)">
+            Details
+          </ion-button>
+        </ion-card-content>
+      </ion-card>
+    </ion-item>
+  </ion-list>
+
 </ion-content>
 
-<ion-button expand="block" (click)="testApi()">
-  Test API (console)
-</ion-button>
+
+
 

@@ -17,8 +17,8 @@ export const routes: Routes = [
     path: 'recipe-details/:id',
     loadComponent: () =>
       import('./pages/recipe-details/recipe-details.page').then(
-        (m) => m.RecipeDetailsPage
-      ),
+       (m) => m.RecipeDetailsPage
+     ),
   },
 
   // Favourites page

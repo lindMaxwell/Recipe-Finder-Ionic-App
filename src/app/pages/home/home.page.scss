@@ -1,0 +1,14 @@
+/* controls image size */
+.recipe-image-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+
+.recipe-image-container ion-img {
+  width: 150px;        
+  height: auto;
+  object-fit: contain; 
+  border-radius: 8px;  
+}

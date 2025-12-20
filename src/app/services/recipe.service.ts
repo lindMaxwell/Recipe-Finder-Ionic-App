@@ -2,10 +2,9 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-import {
-  RecipeSearchResponse,
-  RecipeDetailsResponse,
-} from './recipe.models';
+
+import { RecipeSearchResponse, RecipeDetailsResponse } from './recipe.models';
+
 
 /**
  * This services will:
@@ -17,7 +16,7 @@ import {
 })
 export class RecipeService {
   // Spoonacular API key
-  private readonly apiKey = '70759a4f7911402abcc53d3c51d3b759';
+  private apiKey: string = '70759a4f7911402abcc53d3c51d3b759';
 
   // URL for Spoonacular API calls
   private readonly baseUrl = 'https://api.spoonacular.com';
@@ -25,6 +24,15 @@ export class RecipeService {
   constructor(private http: HttpClient) {}
 
   
+  RecipeDetailsResponse(id: number): Observable<RecipeDetailsResponse> {
+  // Build the URL using a template literal (backticks)
+  const url = `${this.baseUrl}/recipes/${id}/information?apiKey=${this.apiKey}`;
+
+  // HttpClient.get returns an Observable we can subscribe to in the page
+  return this.http.get<RecipeDetailsResponse>(url);
+}
+
+
    // Search recipes by ingredients.
    
   searchRecipesByIngredients(ingredients: string): Observable<RecipeSearchResponse> {
