@@ -1,6 +1,6 @@
-/* ============================
-   SEARCH (Home Page)
-   ============================ */
+
+   //SEARCH (Home Page)
+  
 
 export interface RecipeSearchResponse {
   results: RecipeSearchResult[];
@@ -17,9 +17,9 @@ export interface RecipeSearchResult {
 }
 
 
-/* ============================
-   RECIPE DETAILS
-   ============================ */
+
+   //RECIPE DETAILS
+   
 
 export interface RecipeDetailsResponse {
   id: number;
@@ -34,20 +34,20 @@ export interface RecipeDetailsResponse {
 }
 
 
-/* ============================
-   INGREDIENTS
-   ============================ */
+
+   //INGREDIENTS
+   
 
 export interface ExtendedIngredient {
   id?: number;
   name: string;
 
-  // basic values Spoonacular provides
+  // Values from Spoonacular 
   amount: number;
   unit: string;
   original?: string;
 
-  // Spoonacular also provides measures (metric/us)
+  // Measures from Spoonacular
   measures?: {
     us: MeasureUnit;
     metric: MeasureUnit;

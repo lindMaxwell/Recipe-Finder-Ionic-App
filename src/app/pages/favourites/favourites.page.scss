@@ -1,0 +1,52 @@
+.loading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.error {
+  margin-top: 12px;
+}
+
+.empty {
+  margin-top: 12px;
+  opacity: 0.8;
+}
+
+
+.recipe-card {
+  margin-top: 12px;
+}
+
+.recipe-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.recipe-thumb {
+  width: 140px;
+  height: 100px;
+  border-radius: 12px;
+  overflow: hidden;
+
+  /* Prevent stretched images */
+  object-fit: cover;
+}
+
+.recipe-info {
+  flex: 1;
+}
+
+.recipe-title {
+  margin: 0 0 10px 0;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.recipe-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}

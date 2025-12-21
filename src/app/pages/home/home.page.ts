@@ -1,17 +1,17 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RecipeService } from '../../services/recipe.service';
-import { RecipeSearchResult, RecipeDetailsResponse } from '../../services/recipe.models';
+
+import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
+
 import {
   IonButton,
-  IonButtons,
   IonCard,
   IonCardContent,
-  IonCardHeader,
-  IonCardTitle,
   IonContent,
   IonHeader,
+  IonIcon,
   IonImg,
   IonInput,
   IonItem,
@@ -20,16 +20,15 @@ import {
   IonSpinner,
   IonTitle,
   IonToolbar,
-  IonIcon
+  IonButtons,
 } from '@ionic/angular/standalone';
 
 import { addIcons } from 'ionicons';
-import { heart, heartOutline, settingsOutline } from 'ionicons/icons';
+import { heart, heartOutline, settings, settingsOutline } from 'ionicons/icons';
+
+import { RecipeService } from '../../services/recipe.service';
+import { RecipeSearchResult } from '../../services/recipe.models';
 import { FavouritesService } from '../../services/favourites.service';
-
-import { RouterLink, Router } from '@angular/router';
-
-
 
 @Component({
   selector: 'app-home',
@@ -39,71 +38,80 @@ import { RouterLink, Router } from '@angular/router';
   imports: [
     CommonModule,
     FormsModule,
+
     IonContent,
     IonHeader,
-    IonToolbar,
     IonTitle,
+    IonToolbar,
     IonButtons,
-    IonIcon,
+
     IonItem,
     IonLabel,
     IonInput,
+
     IonButton,
+    IonIcon,
+
     IonList,
     IonCard,
-    IonCardHeader,
-    IonCardTitle,
     IonCardContent,
     IonImg,
     IonSpinner,
-    RouterLink,
   ],
 })
-
-
-export class HomePage implements OnInit {
-
-  // User input
+export class HomePage implements OnInit, OnDestroy {
   ingredientsText: string = '';
-
-  // API results
   recipes: RecipeSearchResult[] = [];
 
-  // UI state
-  isLoading = false;
-  errorMessage = '';
+  isLoading: boolean = false;
+  errorMessage: string = '';
+  noResults: boolean = false;
 
-  // Favourite recipe IDs
-  favourites = new Set<number>();
+  // For UI toggles
+  favouriteIds = new Set<number>();
+  private favSub?: Subscription;
 
   constructor(
     private recipeService: RecipeService,
     private router: Router,
     private favouritesService: FavouritesService
   ) {
-    addIcons({
-      heart,
-      heartOutline,
-      settingsOutline
-    });
+    addIcons({ heart, heartOutline, settings, settingsOutline });
   }
 
   async ngOnInit(): Promise<void> {
-    await this.loadFavourites();
+    await this.favouritesService.init();
+
+    this.favSub = this.favouritesService.ids$.subscribe((ids) => {
+      this.favouriteIds = new Set(ids);
+    });
   }
 
-  /** Load favourite recipe IDs */
-  private async loadFavourites(): Promise<void> {
-    const ids = await this.favouritesService.getIds();
-    this.favourites = new Set(ids);
+  ngOnDestroy(): void {
+    this.favSub?.unsubscribe();
   }
 
-  /** Search Spoonacular by ingredients */
+  //Navigation
+  goToFavourites(): void {
+    this.router.navigate(['/favourites']);
+  }
+
+  goToSettings(): void {
+    this.router.navigate(['/settings']);
+  }
+
+  openDetails(id: number): void {
+    this.router.navigate(['/recipe-details', id]);
+  }
+
+  //Search
   searchRecipes(): void {
     this.errorMessage = '';
+    this.noResults = false;
 
     const query = this.ingredientsText.trim();
-    if (!query) {
+
+    if (query.length === 0) {
       this.errorMessage = 'Please enter at least one ingredient.';
       this.recipes = [];
       return;
@@ -113,55 +121,41 @@ export class HomePage implements OnInit {
     this.recipes = [];
 
     this.recipeService.searchRecipesByIngredients(query).subscribe({
-      next: async (data) => {
-        this.recipes = data.results;
+      next: (data) => {
+        this.recipes = data.results ?? [];
+        this.noResults = this.recipes.length === 0;
         this.isLoading = false;
-        await this.loadFavourites(); 
       },
       error: (err) => {
-        console.error(err);
-        this.errorMessage = 'Failed to search recipes.';
+        console.log('API error:', err);
+        this.errorMessage = 'Something went wrong contacting Spoonacular.';
         this.isLoading = false;
       },
     });
   }
 
-  /** Clear input + results */
   clearSearch(): void {
     this.ingredientsText = '';
     this.recipes = [];
     this.errorMessage = '';
+    this.noResults = false;
   }
 
-  /** Navigate to recipe details */
-  openDetails(id: number): void {
-    this.router.navigate(['/recipe-details', id]);
+  //Favourites
+  isFavourite(id: number): boolean {
+    return this.favouriteIds.has(id);
   }
 
-  /** Is recipe favourited */
-  isFav(id: number): boolean {
-    return this.favourites.has(id);
+  async toggleFavourite(id: number): Promise<void> {
+    await this.favouritesService.toggle(id);
+    // UI updates 
   }
 
-  /** Toggle favourite on/off */
-  async toggleFav(id: number): Promise<void> {
-    const nowFav = await this.favouritesService.toggle(id);
-    if (nowFav) {
-      this.favourites.add(id);
-    } else {
-      this.favourites.delete(id);
-    }
+  favouriteButtonText(id: number): string {
+    return this.isFavourite(id) ? 'Remove from favourites' : 'Add to favourites';
   }
 
-  /** Header navigation */
-  goToFavourites(): void {
-    this.router.navigate(['/favourites']);
-  }
-
-  goToSettings(): void {
-    this.router.navigate(['/settings']);
+  favouriteIconName(id: number): string {
+    return this.isFavourite(id) ? 'heart' : 'heart-outline';
   }
 }
-
-
-

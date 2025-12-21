@@ -2,18 +2,18 @@
   <ion-toolbar>
     <ion-title>G00438819</ion-title>
 
-       <ion-buttons slot="end">
-      <ion-button (click)="goToFavourites()">
+    <!-- Top right buttons -->
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="goToFavourites()">
         <ion-icon name="heart-outline"></ion-icon>
       </ion-button>
 
-      <ion-button (click)="goToSettings()">
+      <ion-button fill="clear" (click)="goToSettings()">
         <ion-icon name="settings-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
-
 
 <ion-content class="ion-padding">
 
@@ -27,51 +27,58 @@
   </ion-item>
 
   <!-- Buttons -->
-  <ion-button expand="block" (click)="searchRecipes()">
-    Search
-  </ion-button>
+  <ion-button expand="block" (click)="searchRecipes()">Search</ion-button>
+  <ion-button expand="block" fill="outline" (click)="clearSearch()">Clear</ion-button>
 
-  <ion-button expand="block" fill="outline" (click)="clearSearch()">
-    Clear
-  </ion-button>
-
-  <!-- Loading Message -->
-  <div *ngIf="isLoading">
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="ion-padding">
     <ion-spinner></ion-spinner>
     <p>Loading recipes...</p>
   </div>
 
-  <!-- Error message -->
+  <!-- Error -->
   <p *ngIf="errorMessage">{{ errorMessage }}</p>
 
-  <!-- Results list -->
+  <!-- No results -->
+  <p *ngIf="!isLoading && noResults">No recipes found. Try different ingredients.</p>
+
+  <!-- Results -->
   <ion-list *ngIf="recipes.length > 0">
-    <ion-item *ngFor="let r of recipes">
-      <ion-card style="width: 100%;">
-        <div class="recipe-image-container">
-         <ion-img [src]="r.image"></ion-img>
+    <ion-card *ngFor="let r of recipes" class="recipe-card">
+
+      <ion-card-content class="recipe-row">
+        <!-- Left image -->
+        <ion-img class="recipe-thumb" [src]="r.image"></ion-img>
+
+        <!-- Right content -->
+        <div class="recipe-info">
+          <h2 class="recipe-title">{{ r.title }}</h2>
+
+          <div class="recipe-actions">
+            <ion-button size="small" fill="outline" (click)="openDetails(r.id)">
+              Details
+            </ion-button>
+
+            <ion-button
+              size="small"
+              (click)="toggleFavourite(r.id)"
+            >
+              <ion-icon
+                slot="start"
+                [name]="favouriteIconName(r.id)"
+              ></ion-icon>
+              {{ favouriteButtonText(r.id) }}
+            </ion-button>
+          </div>
         </div>
+      </ion-card-content>
 
-
-        <ion-card-header>
-           <ion-card-title>{{ r.title }}</ion-card-title>
-
-           <ion-button fill="clear" size="small" (click)="toggleFav(r.id)">
-            <ion-icon [name]="isFav(r.id) ? 'heart' : 'heart-outline'"></ion-icon>
-          </ion-button>
-        </ion-card-header>
-
-        <ion-card-content>
-          <!--  -->
-          <ion-button expand="block" fill="outline" (click)="openDetails(r.id)">
-            Details
-          </ion-button>
-        </ion-card-content>
-      </ion-card>
-    </ion-item>
+    </ion-card>
   </ion-list>
 
 </ion-content>
+
+
 
 
 

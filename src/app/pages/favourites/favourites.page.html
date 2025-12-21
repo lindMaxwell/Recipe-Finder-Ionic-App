@@ -1,47 +1,43 @@
 <ion-header>
   <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-back-button defaultHref="/home"></ion-back-button>
-    </ion-buttons>
     <ion-title>favourites</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
 
-  <div *ngIf="isLoading">
+  <div *ngIf="isLoading" class="loading">
     <ion-spinner></ion-spinner>
     <p>Loading favourites...</p>
   </div>
 
-  <p *ngIf="!isLoading && errorMessage">{{ errorMessage }}</p>
+  <p *ngIf="!isLoading && errorMessage" class="error">{{ errorMessage }}</p>
 
-  <p *ngIf="!isLoading && !errorMessage && recipes.length === 0">
-    No favourites yet. Tap the heart on a recipe to save it.
+  <p *ngIf="!isLoading && empty && !errorMessage" class="empty">
+    No favourites yet. Add some from the home page ❤️
   </p>
 
-  <ion-list *ngIf="!isLoading && recipes.length > 0">
-    <ion-item *ngFor="let r of recipes">
-      <ion-card style="width: 100%;">
-        <ion-img [src]="r.image"></ion-img>
+  <ion-card *ngFor="let r of favouriteRecipes" class="recipe-card">
+    <ion-card-content class="recipe-row">
+      <ion-img class="recipe-thumb" [src]="r.image"></ion-img>
 
-        <ion-card-header>
-          <ion-card-title>{{ r.title }}</ion-card-title>
-        </ion-card-header>
+      <div class="recipe-info">
+        <h2 class="recipe-title">{{ r.title }}</h2>
 
-        <ion-card-content>
-          <ion-button expand="block" (click)="openDetails(r.id)">
+        <div class="recipe-actions">
+          <ion-button size="small" fill="outline" (click)="openDetails(r.id)">
             Details
           </ion-button>
 
-          <ion-button expand="block" fill="outline" (click)="remove(r.id)">
-            <ion-icon name="trash-outline"></ion-icon>
+          <ion-button size="small" (click)="removeFromFavourites(r.id)">
+            <ion-icon slot="start" name="trash-outline"></ion-icon>
             Remove
           </ion-button>
-        </ion-card-content>
-      </ion-card>
-    </ion-item>
-  </ion-list>
+        </div>
+      </div>
+    </ion-card-content>
+  </ion-card>
 
 </ion-content>
+
 

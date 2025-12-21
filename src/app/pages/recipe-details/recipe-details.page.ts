@@ -1,31 +1,32 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
-import { FavouritesService } from '../../services/favourites.service';
-
-
+import { ActivatedRoute, Router } from '@angular/router';
 
 import {
+  IonBackButton,
+  IonButton,
+  IonButtons,
+  IonCard,
+  IonCardContent,
   IonContent,
   IonHeader,
+  IonIcon,
+  IonImg,
+  IonSpinner,
   IonTitle,
   IonToolbar,
-  IonImg,
   IonList,
   IonItem,
   IonLabel,
-  IonSpinner,
-  IonBackButton,
-  IonButtons,
-  IonButton
- 
 } from '@ionic/angular/standalone';
 
-
+import { addIcons } from 'ionicons';
+import { heart, heartOutline } from 'ionicons/icons';
 
 import { RecipeService } from '../../services/recipe.service';
 import { RecipeDetailsResponse } from '../../services/recipe.models';
 import { SettingsService, MeasurementUnit } from '../../services/settings.service';
+import { FavouritesService } from '../../services/favourites.service';
 
 @Component({
   selector: 'app-recipe-details',
@@ -38,86 +39,89 @@ import { SettingsService, MeasurementUnit } from '../../services/settings.servic
     IonHeader,
     IonTitle,
     IonToolbar,
+    IonButtons,
+    IonBackButton,
+    IonButton,
+    IonIcon,
     IonImg,
+    IonSpinner,
+    IonCard,
+    IonCardContent,
     IonList,
     IonItem,
     IonLabel,
-    IonSpinner,
-    IonBackButton,
-    IonButtons,
-    IonButton
   ],
 })
 export class RecipeDetailsPage implements OnInit {
   recipe?: RecipeDetailsResponse;
 
-  unit: MeasurementUnit = 'metric';   
-  useMetric = true;
+  isLoading = true;
+  errorMessage = '';
 
-  isLoading: boolean = true;
-  errorMessage: string = '';
+  unit: MeasurementUnit = 'metric';
+  isFav = false;
 
-  isFavourite = false;
-
+  private recipeId = 0;
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private recipeService: RecipeService,
     private settingsService: SettingsService,
     private favouritesService: FavouritesService
-  ) {}
+  ) {
+    addIcons({ heart, heartOutline });
+  }
 
   async ngOnInit(): Promise<void> {
-    const idFromUrl = Number(this.route.snapshot.paramMap.get('id'));
+    await this.favouritesService.init();
 
+    const idFromUrl = Number(this.route.snapshot.paramMap.get('id'));
     if (!idFromUrl) {
       this.errorMessage = 'Invalid recipe id in the URL.';
       this.isLoading = false;
       return;
     }
+    this.recipeId = idFromUrl;
 
-    await this.loadPage(idFromUrl);
-  }
-
-  private async loadPage(id: number): Promise<void> {
-    // Read the saved setting from storage
+    // Load unit + favourite state first (fast)
     this.unit = await this.settingsService.getUnit();
-    this.useMetric = this.unit === 'metric';
+    this.isFav = await this.favouritesService.isFavourite(this.recipeId);
 
-    // Now load recipe details (PASS unit into service)
-    this.recipeService.getRecipeDetailsById(id, this.unit).subscribe({
-      next: async(data) => {
+    // Load details using unit
+    this.recipeService.getRecipeDetailsById(this.recipeId, this.unit).subscribe({
+      next: (data) => {
         this.recipe = data;
-        this.isFavourite = await this.favouritesService.isFavourite(data.id);
         this.isLoading = false;
       },
-
-
-      
       error: (err) => {
         console.error(err);
         this.errorMessage = 'Failed to load recipe details.';
         this.isLoading = false;
       },
-
-    
-      
     });
-
-    
   }
 
-      async toggleFavourite(): Promise<void> {
-       if (!this.recipe) return;
-
-       const nowFav = await this.favouritesService.toggle(this.recipe.id);
-       this.isFavourite = nowFav;
-      }
-
-      stripHtml(html: string | undefined | null): string {
-      return (html || '').replace(/<[^>]+>/g, '');
+  async toggleFavourite(): Promise<void> {
+    this.isFav = await this.favouritesService.toggle(this.recipeId);
   }
 
+  favButtonText(): string {
+    return this.isFav ? 'Remove from favourites' : 'Add to favourites';
+  }
+
+  favIconName(): string {
+    return this.isFav ? 'heart' : 'heart-outline';
+  }
+
+  stripHtml(html: string | undefined | null): string {
+    return (html || '').replace(/<[^>]+>/g, '');
+  }
+
+  goBack(): void {
+    this.router.navigate(['/home']);
+  }
 }
+
 
 

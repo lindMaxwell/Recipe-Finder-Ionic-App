@@ -1,29 +1,26 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 
 import {
+  IonButton,
+  IonCard,
+  IonCardContent,
   IonContent,
   IonHeader,
+  IonIcon,
+  IonImg,
+  IonSpinner,
   IonTitle,
   IonToolbar,
-  IonList,
-  IonItem,
-  IonLabel,
-  IonImg,
-  IonButton,
-  IonIcon,
-  IonSpinner,
-  IonButtons,
-  IonBackButton,
-  IonCard,
-  IonCardHeader,
-  IonCardTitle,
-  IonCardContent,
+ // IonButtons,
 } from '@ionic/angular/standalone';
 
 import { addIcons } from 'ionicons';
 import { trashOutline } from 'ionicons/icons';
+
+import { Subscription, forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 import { FavouritesService } from '../../services/favourites.service';
 import { RecipeService } from '../../services/recipe.service';
@@ -36,15 +33,27 @@ import { RecipeDetailsResponse } from '../../services/recipe.models';
   standalone: true,
   imports: [
     CommonModule,
-    IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonBackButton,
-    IonList, IonItem, IonLabel, IonImg, IonButton, IonIcon, IonSpinner,
-    IonCard, IonCardHeader, IonCardTitle, IonCardContent
+    IonContent,
+    IonHeader,
+    IonTitle,
+    IonToolbar,
+    //IonButtons,
+
+    IonButton,
+    IonIcon,
+    IonCard,
+    IonCardContent,
+    IonImg,
+    IonSpinner,
   ],
 })
-export class FavouritesPage implements OnInit {
+export class FavouritesPage implements OnInit, OnDestroy {
+  favouriteRecipes: RecipeDetailsResponse[] = [];
   isLoading = true;
   errorMessage = '';
-  recipes: RecipeDetailsResponse[] = [];
+  empty = false;
+
+  private sub?: Subscription;
 
   constructor(
     private favouritesService: FavouritesService,
@@ -54,50 +63,69 @@ export class FavouritesPage implements OnInit {
     addIcons({ trashOutline });
   }
 
-  async ngOnInit() {
+  async ngOnInit(): Promise<void> {
+    await this.favouritesService.init();
+
+    // If user removes elsewhere, page updates too
+    this.sub = this.favouritesService.ids$.subscribe(() => {
+      this.loadFavourites();
+    });
+
     await this.loadFavourites();
   }
 
-  // Refresh page
-  async ionViewWillEnter() {
-    await this.loadFavourites();
+  ngOnDestroy(): void {
+    this.sub?.unsubscribe();
   }
 
   async loadFavourites(): Promise<void> {
     this.isLoading = true;
     this.errorMessage = '';
-    this.recipes = [];
+    this.empty = false;
+    this.favouriteRecipes = [];
 
-    try {
-      const ids = await this.favouritesService.getIds();
+    const ids = await this.favouritesService.getIds();
 
-      if (ids.length === 0) {
-        this.isLoading = false;
-        return;
-      }
-
-      // Load details for each favourite
-      const requests = ids.map((id) =>
-        this.recipeService.getRecipeDetailsById(id).toPromise()
-      );
-
-      const results = await Promise.all(requests);
-      this.recipes = results.filter(Boolean) as RecipeDetailsResponse[];
-    } catch (e) {
-      console.error(e);
-      this.errorMessage = 'Failed to load favourites.';
-    } finally {
+    if (ids.length === 0) {
       this.isLoading = false;
+      this.empty = true;
+      return;
     }
+
+    const calls = ids.map((id) =>
+      this.recipeService.getRecipeDetailsById(id).pipe(
+        catchError((err) => {
+          console.error('Failed to load favourite recipe', id, err);
+          return of(null);
+        })
+      )
+    );
+
+    forkJoin(calls).subscribe({
+      next: (results) => {
+        this.favouriteRecipes = (results.filter(Boolean) as RecipeDetailsResponse[])
+          .sort((a, b) => a.title.localeCompare(b.title));
+
+        this.empty = this.favouriteRecipes.length === 0;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error(err);
+        this.errorMessage = 'Failed to load favourites.';
+        this.isLoading = false;
+      },
+    });
   }
 
   openDetails(id: number): void {
     this.router.navigate(['/recipe-details', id]);
   }
 
-  async remove(id: number): Promise<void> {
+  async removeFromFavourites(id: number): Promise<void> {
     await this.favouritesService.remove(id);
-    this.recipes = this.recipes.filter(r => r.id !== id);
+    // UI will refresh 
+    this.favouriteRecipes = this.favouriteRecipes.filter((r) => r.id !== id);
+    this.empty = this.favouriteRecipes.length === 0;
   }
 }
 

@@ -1,0 +1,74 @@
+.loading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.error {
+  margin-top: 12px;
+}
+
+.details-card {
+  margin-top: 12px;
+}
+
+.details-top {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.details-thumb {
+  width: 140px;
+  height: 100px;
+  border-radius: 12px;
+  overflow: hidden;
+
+  // Stops the images stretching
+  object-fit: cover;
+}
+
+.details-info {
+  flex: 1;
+}
+
+.details-title {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.details-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 13px;
+  opacity: 0.85;
+}
+
+.unit-chip {
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.section-card {
+  margin-top: 12px;
+}
+
+.section-title {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.ingredient-line {
+  white-space: normal;
+}
+
+.instructions {
+  margin: 0;
+  white-space: pre-wrap;
+  line-height: 1.5;
+}

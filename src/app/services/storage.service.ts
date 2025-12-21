@@ -12,7 +12,7 @@ export class StorageService {
   private ready: Promise<void>;
 
   constructor(private storage: Storage) {
-    // Start initialisation immediately and store the Promise so we can await it later.
+    // Start initialisation immediately and store the Promise 
     this.ready = this.init();
   }
 

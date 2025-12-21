@@ -31,7 +31,7 @@ export class SettingsService {
 
   /**
    * Save the selected measurement unit to storage.
-   * This should stay the same even after the app closes.
+   * Keep the same even after the app closes.
    */
   async setUnit(newUnit: MeasurementUnit): Promise<void> {
     await this.storageService.set(this.STORAGE_KEY, newUnit);

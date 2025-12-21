@@ -5,50 +5,77 @@
     </ion-buttons>
 
     <ion-title>recipe-details</ion-title>
+
+    <ion-buttons slot="end">
+      <ion-button (click)="toggleFavourite()">
+        <ion-icon slot="start" [name]="favIconName()"></ion-icon>
+        {{ favButtonText() }}
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-
-
 <ion-content class="ion-padding">
-  <div *ngIf="isLoading">
+
+  <div *ngIf="isLoading" class="loading">
     <ion-spinner></ion-spinner>
     <p>Loading recipe...</p>
   </div>
 
-  <p *ngIf="!isLoading && errorMessage">{{ errorMessage }}</p>
+  <p *ngIf="!isLoading && errorMessage" class="error">{{ errorMessage }}</p>
 
   <div *ngIf="!isLoading && recipe">
-    <ion-img [src]="recipe.image"></ion-img>
+
     
-    <h2>{{ recipe.title }}</h2>
-    <ion-button expand="block" (click)="toggleFavourite()" *ngIf="recipe">
-      {{ isFavourite ? 'Remove From Favourites' : 'Add to Favourites' }}
-    </ion-button>
-    <p *ngIf="recipe.readyInMinutes">Ready in {{ recipe.readyInMinutes }} minutes</p>
-    <p *ngIf="recipe.servings">Servings: {{ recipe.servings }}</p>
+    <ion-card class="details-card">
+      <ion-card-content class="details-top">
+        <ion-img class="details-thumb" [src]="recipe.image"></ion-img>
 
-  <ion-list *ngIf="recipe?.extendedIngredients?.length">
-  <ion-item *ngFor="let ing of recipe.extendedIngredients">
-    <ion-label>
-      <ng-container *ngIf="useMetric; else usBlock">
-        {{ ing.measures?.metric?.amount ?? ing.amount }}
-        {{ ing.measures?.metric?.unitLong ?? ing.unit }}
-        — {{ ing.name }}
-      </ng-container>
+        <div class="details-info">
+          <h2 class="details-title">{{ recipe.title }}</h2>
 
-      <ng-template #usBlock>
-        {{ ing.measures?.us?.amount ?? ing.amount }}
-        {{ ing.measures?.us?.unitLong ?? ing.unit }}
-        — {{ ing.name }}
-      </ng-template>
-    </ion-label>
-  </ion-item>
-</ion-list>
+          <div class="details-meta">
+            <span *ngIf="recipe.readyInMinutes">⏱ {{ recipe.readyInMinutes }} min</span>
+            <span *ngIf="recipe.servings">🍽 Servings: {{ recipe.servings }}</span>
+            <span class="unit-chip">Units: {{ unit }}</span>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
 
+    <!-- Ingredients -->
+    <ion-card class="section-card">
+      <ion-card-content>
+        <h3 class="section-title">Ingredients</h3>
 
-    <h3>Instructions</h3>
-    <p>{{ stripHtml(recipe.instructions) }}</p>
+        <ion-list *ngIf="recipe.extendedIngredients?.length">
+          <ion-item *ngFor="let ing of recipe.extendedIngredients">
+            <ion-label class="ingredient-line">
+              
+              <ng-container *ngIf="ing.measures?.[unit] as m; else fallbackLine">
+                {{ m.amount }} {{ m.unitLong }} — {{ ing.name }}
+              </ng-container>
+
+              <ng-template #fallbackLine>
+                {{ ing.amount }} {{ ing.unit }} — {{ ing.name }}
+              </ng-template>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+
+        <p *ngIf="!recipe.extendedIngredients?.length">No ingredients available.</p>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Instructions -->
+    <ion-card class="section-card">
+      <ion-card-content>
+        <h3 class="section-title">Instructions</h3>
+        <p class="instructions">
+          {{ stripHtml(recipe.instructions) || 'No instructions available.' }}
+        </p>
+      </ion-card-content>
+    </ion-card>
+
   </div>
 </ion-content>
-
